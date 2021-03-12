@@ -11,11 +11,13 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String content;
   final DateTime targetDate;
+  final String jsonData;
   final int category;
   TodoEntry(
       {@required this.id,
       @required this.content,
       this.targetDate,
+      this.jsonData,
       this.category});
   factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
@@ -29,6 +31,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}content']),
       targetDate: dateTimeType
           .mapFromDatabaseResponse(data['${effectivePrefix}target_date']),
+      jsonData: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}json_data']),
       category:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
@@ -45,6 +49,9 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     if (!nullToAbsent || targetDate != null) {
       map['target_date'] = Variable<DateTime>(targetDate);
     }
+    if (!nullToAbsent || jsonData != null) {
+      map['json_data'] = Variable<String>(jsonData);
+    }
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<int>(category);
     }
@@ -60,6 +67,9 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       targetDate: targetDate == null && nullToAbsent
           ? const Value.absent()
           : Value(targetDate),
+      jsonData: jsonData == null && nullToAbsent
+          ? const Value.absent()
+          : Value(jsonData),
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
@@ -73,6 +83,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       id: serializer.fromJson<int>(json['id']),
       content: serializer.fromJson<String>(json['content']),
       targetDate: serializer.fromJson<DateTime>(json['targetDate']),
+      jsonData: serializer.fromJson<String>(json['jsonData']),
       category: serializer.fromJson<int>(json['category']),
     );
   }
@@ -83,16 +94,22 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       'id': serializer.toJson<int>(id),
       'content': serializer.toJson<String>(content),
       'targetDate': serializer.toJson<DateTime>(targetDate),
+      'jsonData': serializer.toJson<String>(jsonData),
       'category': serializer.toJson<int>(category),
     };
   }
 
   TodoEntry copyWith(
-          {int id, String content, DateTime targetDate, int category}) =>
+          {int id,
+          String content,
+          DateTime targetDate,
+          String jsonData,
+          int category}) =>
       TodoEntry(
         id: id ?? this.id,
         content: content ?? this.content,
         targetDate: targetDate ?? this.targetDate,
+        jsonData: jsonData ?? this.jsonData,
         category: category ?? this.category,
       );
   @override
@@ -101,14 +118,19 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           ..write('id: $id, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
+          ..write('jsonData: $jsonData, ')
           ..write('category: $category')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode,
-      $mrjc(content.hashCode, $mrjc(targetDate.hashCode, category.hashCode))));
+  int get hashCode => $mrjf($mrjc(
+      id.hashCode,
+      $mrjc(
+          content.hashCode,
+          $mrjc(targetDate.hashCode,
+              $mrjc(jsonData.hashCode, category.hashCode)))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -116,6 +138,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           other.id == this.id &&
           other.content == this.content &&
           other.targetDate == this.targetDate &&
+          other.jsonData == this.jsonData &&
           other.category == this.category);
 }
 
@@ -123,29 +146,34 @@ class TodosCompanion extends UpdateCompanion<TodoEntry> {
   final Value<int> id;
   final Value<String> content;
   final Value<DateTime> targetDate;
+  final Value<String> jsonData;
   final Value<int> category;
   const TodosCompanion({
     this.id = const Value.absent(),
     this.content = const Value.absent(),
     this.targetDate = const Value.absent(),
+    this.jsonData = const Value.absent(),
     this.category = const Value.absent(),
   });
   TodosCompanion.insert({
     this.id = const Value.absent(),
     @required String content,
     this.targetDate = const Value.absent(),
+    this.jsonData = const Value.absent(),
     this.category = const Value.absent(),
   }) : content = Value(content);
   static Insertable<TodoEntry> custom({
     Expression<int> id,
     Expression<String> content,
     Expression<DateTime> targetDate,
+    Expression<String> jsonData,
     Expression<int> category,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (content != null) 'content': content,
       if (targetDate != null) 'target_date': targetDate,
+      if (jsonData != null) 'json_data': jsonData,
       if (category != null) 'category': category,
     });
   }
@@ -154,11 +182,13 @@ class TodosCompanion extends UpdateCompanion<TodoEntry> {
       {Value<int> id,
       Value<String> content,
       Value<DateTime> targetDate,
+      Value<String> jsonData,
       Value<int> category}) {
     return TodosCompanion(
       id: id ?? this.id,
       content: content ?? this.content,
       targetDate: targetDate ?? this.targetDate,
+      jsonData: jsonData ?? this.jsonData,
       category: category ?? this.category,
     );
   }
@@ -175,6 +205,9 @@ class TodosCompanion extends UpdateCompanion<TodoEntry> {
     if (targetDate.present) {
       map['target_date'] = Variable<DateTime>(targetDate.value);
     }
+    if (jsonData.present) {
+      map['json_data'] = Variable<String>(jsonData.value);
+    }
     if (category.present) {
       map['category'] = Variable<int>(category.value);
     }
@@ -187,6 +220,7 @@ class TodosCompanion extends UpdateCompanion<TodoEntry> {
           ..write('id: $id, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
+          ..write('jsonData: $jsonData, ')
           ..write('category: $category')
           ..write(')'))
         .toString();
@@ -231,6 +265,18 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
     );
   }
 
+  final VerificationMeta _jsonDataMeta = const VerificationMeta('jsonData');
+  GeneratedTextColumn _jsonData;
+  @override
+  GeneratedTextColumn get jsonData => _jsonData ??= _constructJsonData();
+  GeneratedTextColumn _constructJsonData() {
+    return GeneratedTextColumn(
+      'json_data',
+      $tableName,
+      true,
+    );
+  }
+
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
   GeneratedIntColumn _category;
   @override
@@ -241,7 +287,8 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   }
 
   @override
-  List<GeneratedColumn> get $columns => [id, content, targetDate, category];
+  List<GeneratedColumn> get $columns =>
+      [id, content, targetDate, jsonData, category];
   @override
   $TodosTable get asDslTable => this;
   @override
@@ -267,6 +314,10 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
           _targetDateMeta,
           targetDate.isAcceptableOrUnknown(
               data['target_date'], _targetDateMeta));
+    }
+    if (data.containsKey('json_data')) {
+      context.handle(_jsonDataMeta,
+          jsonData.isAcceptableOrUnknown(data['json_data'], _jsonDataMeta));
     }
     if (data.containsKey('category')) {
       context.handle(_categoryMeta,

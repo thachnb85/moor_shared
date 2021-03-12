@@ -47,6 +47,7 @@ class TodoCard extends StatelessWidget {
                 children: [
                   Text(entry.content),
                   dueDate,
+                  Text(entry.jsonData)
                 ],
               ),
             ),

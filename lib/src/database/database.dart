@@ -16,6 +16,8 @@ class Todos extends Table {
 
   DateTimeColumn get targetDate => dateTime().nullable()();
 
+  TextColumn get jsonData => text().nullable()();
+
   IntColumn get category => integer()
       .nullable()
       .customConstraint('NULLABLE REFERENCES categories(id)')();
@@ -73,23 +75,50 @@ class Database extends _$Database {
           final workId = await into(categories)
               .insert(const CategoriesCompanion(description: Value('Work')));
 
-          await into(todos).insert(TodosCompanion(
-            content: const Value('A first todo entry'),
-            targetDate: Value(DateTime.now()),
-          ));
+          // insert some example data
+          for(int i = 0; i < 5; i++){
+            await into(todos).insert(TodosCompanion(
+                content: Value('Todo entry $i'),
+                targetDate: Value(DateTime.now()),
+                jsonData: Value('"{"index":"$i"}"')
+            ));
+          }
 
-          await into(todos).insert(
-            TodosCompanion(
-              content: const Value('Rework persistence code'),
-              category: Value(workId),
-              targetDate: Value(
-                DateTime.now().add(const Duration(days: 4)),
-              ),
-            ),
-          );
+          print('---------------select EVERYTHING');
+          List<TodoEntry> tds = await selectEverything();
+          for(TodoEntry td in tds){
+            print(td.jsonData);
+          }
+
+          print('---------------select something');
+          TodoEntry td = await selectSomething();
+          print(td.jsonData);
+
         }
       },
     );
+  }
+
+  Future<List<TodoEntry>> selectEverything() {
+    return customSelect(
+        'SELECT * FROM todos',
+        readsFrom: {todos}
+    ).map((row){
+      return TodoEntry.fromData(row.data, this);
+    }).get();
+  }
+
+  Future<TodoEntry> selectSomething() {
+    // This custom select works perfect:
+    //return (select(todos)..where((tbl) => tbl.id.equals(2))).getSingle();
+
+    // but this json function doesn't work
+    return customSelect(
+        'SELECT * FROM todos WHERE json_extract(todos.json_data, \'\$.index\') = \'2\'',
+        readsFrom: {todos}
+    ).map((row){
+      return TodoEntry.fromData(row.data, this);
+    }).getSingle();
   }
 
   Stream<List<CategoryWithCount>> categoriesWithCount() {
